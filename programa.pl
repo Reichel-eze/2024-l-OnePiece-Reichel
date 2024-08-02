@@ -108,8 +108,39 @@ pasoDesapercibido(Pirata, Evento) :-
     not(impactoEnRecompensa(Pirata, Evento, _)). % PERO no existe una recompensa sobre ese Pirata con ese Evento
 
 % PUNTO 4)
-% Saber cuál es la recompensa total de una tripulación, que es la suma de las recompensas actuales de sus miembros
+% Saber cuál es la recompensa total de una tripulación, que es 
+% la suma de las recompensas actuales de sus miembros
 
+recompensaTotal(Tripulacion, RecompensaTotal) :-
+    tripulante(_, Tripulacion),   % para la Tripulacion ligada (por ej sombreroDePaja, busco las recompensas de cada uno de sus tripulantes)                                      % o participoDeEvento(Tripulacion, _),
+    findall(RecompensaActual, (tripulante(Pirata, Tripulacion), recompensaActual(Pirata, RecompensaActual)), RecompensasTripulantes),
+    sum_list(RecompensasTripulantes, RecompensaTotal).
+    
+recompensaActual(Pirata, RecompensaCaptura) :-
+    tripulante(Pirata, _),
+    findall(Recompensa, impactoEnRecompensa(Pirata, _, Recompensa), RecompensasEventos),
+    sum_list(RecompensasEventos, RecompensaCaptura).
 
+% Version mas simple, pero sin abstraccion (sin predicados auxiliares) --> SUMO TODO DE UNA
+recompensaTotalV2(Tripulacion, RecompensaTotal) :-  
+    tripulante(_, Tripulacion),                                      
+    findall(Recompensa, (tripulante(Pirata, Tripulacion), impactoEnRecompensa(Pirata, _, Recompensa)), RecompensasTripulantes),
+    sum_list(RecompensasTripulantes, RecompensaTotal).
 
+% PUNTO 5)
+% Saber si una tripulación es temible. Lo es si todos sus integrantes 
+% son peligrosos o si la recompensa total de la tripulación supera 
+% los $500.000.000. Consideramos peligrosos a piratas cuya recompensa 
+% actual supere los $100.000.000
 
+tripulacionTemible(Tripulacion) :-
+    tripulante(_, Tripulacion),     % tengo que ligar Tripulacion, antes que se meta al forall!!
+    forall(tripulante(Pirata, Tripulacion), peligroso(Pirata)).
+
+tripulacionTemible(Tripulacion) :-
+    recompensaTotal(Tripulacion, RecompensaTotal),  % recompensaTotal ya es inversible jeje!!
+    RecompensaTotal > 500000000.
+
+peligroso(Pirata) :-
+    recompensaActual(Pirata, RecompensaActual),  % recompensaActual ya es inversible jeje!!
+    RecompensaActual > 100000000.
