@@ -144,3 +144,86 @@ tripulacionTemible(Tripulacion) :-
 peligroso(Pirata) :-
     recompensaActual(Pirata, RecompensaActual),  % recompensaActual ya es inversible jeje!!
     RecompensaActual > 100000000.
+
+% PUNTO 6)
+% a) Necesitamos modificar la funcionalidad anterior, 
+% porque ahora hay otra forma en la cual una persona puede 
+% considerarse peligrosa: alguien que comió una fruta peligrosa 
+% se considera peligroso, independientemente de cuál sea el precio
+% sobre su cabeza.
+
+% EXTENSION DEL PREDICADO PELIGROSO!!
+
+peligroso(Pirata) :-
+    comio(Pirata, Fruta),
+    frutaPeligrosa(Fruta).
+
+%comio(Pirata, FrutaQueComio).
+%comio(Pirata, TipoFruta()).
+comio(luffy, paramecia(gomugomu)).
+comio(buggy, paramecia(barabara)).
+comio(law, paramecia(opeope)).
+comio(chopper, zoan(hitohito, humano)).
+comio(lucci, zoan(nekoneko, leopardo)).
+comio(smoker, logia(mokumoku, humo)).
+
+%frutaPeligrosa(Fruta).
+frutaPeligrosa(paramecia(opeope)).                          % es un hecho, esta fruta de este tipo es peligrosa!!
+frutaPeligrosa(zoan(_, Especie)) :- especieFeroz(Especie).  % para ser peligrosa tiene que convertirse en una especie feroz!!
+frutaPeligrosa(logia(_,_)).                                 % solo por ser una fruta de tipo logia es peligrosa!!
+
+especioFeroz(lobo).
+especieFeroz(leopardo).
+especieFeroz(anaconda).
+
+% ESTO NO SE PIDE:
+nombreDeLaFruta(paramecia(Nombre), Nombre).
+nombreDeLaFruta(zoan(Nombre, _), Nombre).
+nombreDeLaFruta(logia(Nombre, _), Nombre).
+
+% Sabemos que:
+% - Luffy comió la fruta gomugomu de tipo paramecia, que no se considera peligrosa.
+% - Buggy comió la fruta barabara de tipo paramecia, que no se considera peligrosa.
+% - Law comió la fruta opeope de tipo paramecia, que se considera peligrosa.
+% - Chopper comió una fruta hitohito de tipo zoan que lo convierte en humano.
+% - Nami, Zoro, Ussop, Sanji, Bepo, Arlong y Hatchan no comieron frutas del diablo.  --> NO AGREGO NADA DEBIDO AL UNIVERSO CERRADO ES FALSO!!
+% - Lucci comió una fruta nekoneko de tipo zoan que lo convierte en leopardo.
+% - Smoker comió la fruta mokumoku de tipo logia que le permite transformarse en humo.
+
+% b) Justificar las decisiones de modelado tomadas para cumplir con 
+% lo pedido, tanto desde el punto de vista de la definición como del 
+% uso de los nuevos predicados.
+
+% Empezando con el predicado peligroso/1, queriamos saber si un Pirata
+% comio una Fruta y dicha Fruta es Peligrosa. 
+
+% Independientemente de la forma que tenga la fruta, 
+% el predicado frutaPeligrosa me puedo decir si es o no 
+% peligrosa dicha fruta, este mismo NO es necesario que sea inversible.
+% Le puedo preguntar si una fruta es peligrosa o NO, pero no puedo
+% preguntar Que Frutas son peligrosas como incognita/variable
+
+% Se puede ver el polimorfismo aplicado en comio/2 y 
+% en frutaPeligrosa/1. Tambien en especioFeroz con un patterMatching
+
+% Los piratas que no comieron frutas, no son representados en la base
+% de conocimientos, gracias al concepto de universo cerrado, en el cual
+% solo explicitamos aquellas cosas que son ciertas/verdaderas!!. Ademas
+% tambien lo podemos observar en aquellas frutas que NO son peligrosas,
+% las cuales tampoco fueron explicitadas en el codigo
+
+% PUNTO 7)
+% Saber si una tripulación es de piratas de asfalto, 
+% que se cumple si ninguno de sus miembros puede nadar.
+
+esDePiratasDeAsfalto(Tripulacion) :-
+    tripulante(_, Tripulacion),         % pa quie sea inversible
+    forall(tripulante(Tripulante, Tripulacion), not(puedeNadar(Tripulante))).
+
+esDePiratasDeAsfaltoNOT(Tripulacion) :-
+    tripulante(_, Tripulacion),
+    not((tripulante(Tripulante, Tripulacion), puedeNadar(Tripulante))). % NO existe ningun tripulante de la tripulacion que pueda nadar!!
+
+puedeNadar(Pirata) :-        % un Pirata puedeNadar si no consumio ninguna fruta!!
+    tripulante(Pirata, _),   % pa que sea inversible jeje!!
+    not(comio(Pirata,_)).
